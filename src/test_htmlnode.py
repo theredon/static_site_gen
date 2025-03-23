@@ -28,7 +28,7 @@ class TestHTMLNode(unittest.TestCase):
             None,
         )
 
-    def test_repr(self):
+    def test_html_repr(self):
         node = HTMLNode("span", "I dont do tests information well", None, {'html': 'https://boot.dev'})
         self.assertEqual(
             node.__repr__(),
@@ -43,7 +43,7 @@ class TestHTMLNode(unittest.TestCase):
         node = LeafNode("a", "Click for Google", {"href": "https://google.com"})
         self.assertEqual(node.to_html(), "<a href='https://google.com'>Click for Google</a>")
 
-    def test_repr(self):
+    def test_leaf_repr(self):
         node = LeafNode("a", "Boot.dev", {'href': 'https://boot.dev'})
         self.assertEqual(
             node.__repr__(),
@@ -63,7 +63,22 @@ class TestHTMLNode(unittest.TestCase):
             parent_node.to_html(),
             "<div><span><b>grandchild</b></span></div>",
         )
-
-
+    
+    def test_to_html_extreme(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child8_node = ParentNode("div", [grandchild_node])
+        child7_node = ParentNode("span", [child8_node])
+        child6_node = ParentNode("div", [child7_node])
+        child5_node = ParentNode("span", [child6_node])
+        child4_node = ParentNode("div", [child5_node])
+        child3_node = ParentNode("span", [child4_node])
+        child2_node = ParentNode("div", [child3_node])
+        child1_node = ParentNode("span", [child2_node])
+        parent_node = ParentNode("div", [child1_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><div><span><div><span><div><span><div><b>grandchild</b></div></span></div></span></div></span></div></span></div>",
+        )
+        
 if __name__ == "__main__":
     unittest.main()
