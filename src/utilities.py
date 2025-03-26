@@ -48,3 +48,50 @@ def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
 
+
+def split_nodes_images(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.NORMAL:
+            new_nodes.append(node)
+            continue
+        node_text = node.text
+        images = extract_markdown_images(node_text)
+        if len(images) == 0:
+            new_nodes.append(node)
+            continue
+        for image in images:
+            chunks = node_text.split(f"![{image[0]}]({image[1]})",1 )
+            if len(chunks) != 2:
+                raise Exception("Invalid Markdown text, unmatched image section close")
+            if chunks[0] != "":
+                new_nodes.append(TextNode(chunks[0], TextType.NORMAL))
+            new_nodes.append(TextNode(image[0], TextType.IMAGE, image[1],))
+            node_text = chunks[1]
+        if node_text != "":
+            new_nodes.append(TextNode(node_text, TextType.NORMAL))
+    return new_nodes
+
+
+def split_nodes_links(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type != TextType.NORMAL:
+            new_nodes.append(node)
+            continue
+        node_text = node.text
+        links = extract_markdown_links(node_text)
+        if len(links) == 0:
+            new_nodes.append(node)
+            continue
+        for link in links:
+            chunks = node_text.split(f"[{link[0]}]({link[1]})",1 )
+            if len(chunks) != 2:
+                raise Exception("Invalid Markdown text, unmatched links section close")
+            if chunks[0] != "":
+                new_nodes.append(TextNode(chunks[0], TextType.NORMAL))
+            new_nodes.append(TextNode(link[0], TextType.LINK, link[1],))
+            node_text = chunks[1]
+        if node_text != "":
+            new_nodes.append(TextNode(node_text, TextType.NORMAL))
+    return new_nodes

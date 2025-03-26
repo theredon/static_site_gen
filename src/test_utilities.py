@@ -1,6 +1,6 @@
 import unittest
 
-from utilities import text_node_to_html_node, split_nodes_delimiter, extract_markdown_links, extract_markdown_images
+from utilities import text_node_to_html_node, split_nodes_delimiter, extract_markdown_links, extract_markdown_images, split_nodes_images, split_nodes_links
 from textnode import TextNode, TextType
 
 
@@ -163,6 +163,42 @@ class TestUtilities(unittest.TestCase):
                 ("Facebook", "https://www.facebook.com"),
             ],
             matches
+        )
+    
+
+    def test_split_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.NORMAL,
+        )
+        new_nodes = split_nodes_images([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.NORMAL),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.NORMAL),
+                TextNode("second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"),
+            ],
+            new_nodes,
+        )
+    
+
+    def test_split_links(self):
+        node = TextNode(
+            "My favorite sites are [google.com](https://google.com), [Boot Dev](https://www.youtube.com/@bootdotdev), and [Facebook](https://www.facebook.com)",
+            TextType.NORMAL,
+        )
+        new_nodes = split_nodes_links([node])
+        self.assertListEqual(
+            [
+                TextNode("My favorite sites are ", TextType.NORMAL),
+                TextNode("google.com", TextType.LINK, "https://google.com"),
+                TextNode(", ", TextType.NORMAL),
+                TextNode("Boot Dev", TextType.LINK, "https://www.youtube.com/@bootdotdev"),
+                TextNode(", and ", TextType.NORMAL),
+                TextNode("Facebook", TextType.LINK, "https://www.facebook.com"),
+            ],
+            new_nodes,
         )
 
 if __name__ == "__main__":
